@@ -1,6 +1,11 @@
 const TABLE_SIZE: usize = 2000;
 
-fn fill_coins(table: Vec<u8>, max_coins: usize, current_coins: Vec<usize>, printout: Option<usize>) -> (usize, Vec<usize>) {
+fn fill_coins(
+    table: Vec<u8>,
+    max_coins: usize,
+    current_coins: Vec<usize>,
+    printout: Option<usize>,
+) -> (usize, Vec<usize>) {
     if current_coins.len() == max_coins {
         for (i, t) in table.iter().enumerate() {
             if *t > max_coins as u8 {
@@ -9,9 +14,21 @@ fn fill_coins(table: Vec<u8>, max_coins: usize, current_coins: Vec<usize>, print
         }
         return (table.len(), current_coins);
     } else {
-        let mut new_coin = current_coins[current_coins.len() - 1] + 1;
+        let upper_coin = {
+            let mut new_coin = current_coins[current_coins.len() - 1] + 1;
+            loop {
+                if new_coin >= table.len() {
+                    break;
+                }
+                if table[new_coin] > max_coins as u8 {
+                    break;
+                }
+                new_coin += 1;
+            }
+            new_coin
+        };
         let mut best_value = (0, vec![]);
-        loop {
+        for new_coin in (current_coins[current_coins.len() - 1]+1 .. upper_coin+1).rev() {
             let mut new_table = table.clone();
             for (i, t) in table.iter().enumerate() {
                 if *t <= max_coins as u8 {
@@ -32,13 +49,6 @@ fn fill_coins(table: Vec<u8>, max_coins: usize, current_coins: Vec<usize>, print
             if value.0 > best_value.0 {
                 best_value = value;
             }
-            if new_coin >= table.len() {
-                break;
-            }
-            if table[new_coin] > max_coins as u8 {
-                break;
-            }
-            new_coin += 1;
         }
         if let Some(p) = printout {
             if p >= current_coins.len() {
